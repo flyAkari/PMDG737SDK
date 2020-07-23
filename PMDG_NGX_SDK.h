@@ -1,36 +1,36 @@
 //------------------------------------------------------------------------------
 //
-//  PMDG 737NGX external connection SDK
+//  PMDG 737 NG3 external connection SDK
 //  Copyright (c) 2011 Precision Manuals Development Group
 // 
 //------------------------------------------------------------------------------
 
-#ifndef PMDG_NGX_SDK_H
-#define PMDG_NGX_SDK_H
+#ifndef PMDG_NG3_SDK_H
+#define PMDG_NG3_SDK_H
 
 // SimConnect data area definitions
-#define PMDG_NGX_DATA_NAME			"PMDG_NGX_Data"
-#define PMDG_NGX_DATA_ID			0x4E477831
-#define PMDG_NGX_DATA_DEFINITION	0x4E477832
-#define PMDG_NGX_CONTROL_NAME		"PMDG_NGX_Control"
-#define PMDG_NGX_CONTROL_ID			0x4E477833
-#define PMDG_NGX_CONTROL_DEFINITION	0x4E477834
-#define PMDG_NGX_CDU_0_NAME			"PMDG_NGX_CDU_0"
-#define PMDG_NGX_CDU_1_NAME			"PMDG_NGX_CDU_1"
-#define PMDG_NGX_CDU_0_ID			0x4E477835
-#define PMDG_NGX_CDU_1_ID			0x4E477836
-#define PMDG_NGX_CDU_0_DEFINITION	0x4E477838
-#define PMDG_NGX_CDU_1_DEFINITION	0x4E477839
+#define PMDG_NG3_DATA_NAME			"PMDG_NG3_Data"
+#define PMDG_NG3_DATA_ID			0x4E473331
+#define PMDG_NG3_DATA_DEFINITION	0x4E473332
+#define PMDG_NG3_CONTROL_NAME		"PMDG_NG3_Control"
+#define PMDG_NG3_CONTROL_ID			0x4E473333
+#define PMDG_NG3_CONTROL_DEFINITION	0x4E473334
+#define PMDG_NG3_CDU_0_NAME			"PMDG_NG3_CDU_0"
+#define PMDG_NG3_CDU_1_NAME			"PMDG_NG3_CDU_1"
+#define PMDG_NG3_CDU_0_ID			0x4E473335
+#define PMDG_NG3_CDU_1_ID			0x4E473336
+#define PMDG_NG3_CDU_0_DEFINITION	0x4E473338
+#define PMDG_NG3_CDU_1_DEFINITION	0x4E473339
 
-// NOTE - add these lines to the 737NGX_Options.ini file: 
+// NOTE - add these lines to the 737NG3_Options.ini file: 
 //
 //[SDK]
 //EnableDataBroadcast=1
 //
-// to enable the data sending from the NGX.
+// to enable the data sending from the NG3.
 //
 //
-// Add any of these lines to the [SDK] section of the 737NGX_Options.ini file: 
+// Add any of these lines to the [SDK] section of the 737NG3_Options.ini file: 
 //
 //EnableCDUBroadcast.0=1 
 //EnableCDUBroadcast.1=1 
@@ -38,8 +38,8 @@
 // to enable the contents of the corresponding CDU screen to be sent to external programs.
 
 
-// NGX data structure
-struct PMDG_NGX_Data
+// NG3 data structure
+struct PMDG_NG3_Data
 {
 	////////////////////////////////////////////
 	// Controls and indicators
@@ -120,8 +120,13 @@ struct PMDG_NGX_Data
 	bool			FUEL_PumpFwdSw[2];					// left fwd / right fwd
 	bool			FUEL_PumpAftSw[2];					// left aft / right aft
 	bool			FUEL_PumpCtrSw[2];					// ctr left / ctr right
-	bool			FUEL_annunENG_VALVE_CLOSED[2];
-	bool			FUEL_annunSPAR_VALVE_CLOSED[2];
+	bool			FUEL_AuxFwd[2];						// aux fwd A and aux fwd B
+	bool			FUEL_AuxAft[2];						//aux aft A and aux aft B
+	bool			FUEL_FWDBleed;
+	bool			FUEL_AFTBleed;
+	bool			FUEL_GNDXfr;
+	unsigned char	FUEL_annunENG_VALVE_CLOSED[2];		// 0: Closed  1: Open  2: In transit (bright)
+	unsigned char	FUEL_annunSPAR_VALVE_CLOSED[2];		// 0: Closed  1: Open  2: In transit (bright)
 	bool			FUEL_annunFILTER_BYPASS[2];
 	unsigned char	FUEL_annunXFEED_VALVE_OPEN;			// 0: Closed  1: Open  2: In transit (dim)
 	bool			FUEL_annunLOWPRESS_Fwd[2];
@@ -218,8 +223,8 @@ struct PMDG_NGX_Data
 	bool			AIR_annunWingBodyOverheat[2];		
 	bool			AIR_annunBleedTripOff[2];	
 
-	unsigned int	AIR_FltAltWindow;			
-	unsigned int	AIR_LandAltWindow;			
+	unsigned int	AIR_FltAltWindow;					// WARNING obsolete - use AIR_DisplayFltAlt instead
+	unsigned int	AIR_LandAltWindow;					// WARNING obsolete - use AIR_DisplayLandAlt instead
 	unsigned int	AIR_OutflowValveSwitch;				// 0=CLOSE  1=NEUTRAL  2=OPEN
 	unsigned int	AIR_PressurizationModeSelector;		// 0=AUTO  1=ALTN  2=MAN
 
@@ -478,16 +483,89 @@ struct PMDG_NGX_Data
 	char			IRS_DisplayRight[8];			// Right display string, zero terminated 
 	bool			IRS_DisplayShowsDots;			// True if the degrees and decimal dot symbols are shown on the IRS display
 
+	// Yet more new variables 
+	unsigned int	ADF_StandbyFrequency;			// Standby frequency multiplied by 10
+	bool			AFS_AutothrottleServosConnected;	// True if the autothrottle system is driving the thrust levers
+	bool			AFS_ControlsPitch;				// The autoflight system is actively controlling pitch
+	bool			AFS_ControlsRoll;
+
+	bool			ELEC_BusPowered[16];			// True if the corresponding bus is powered:
+													// DC HOT BATT			0	
+													// DC HOT BATT SWITCHED	1	
+													// DC BATT BUS			2	
+													// DC STANDBY BUS		3	
+													// DC BUS 1				4	
+													// DC BUS 2				5	
+													// DC GROUND SVC		6
+													// AC TRANSFER 1		7
+													// AC TRANSFER 2		8
+													// AC GROUND SVC 1		9
+													// AC GROUND SVC 2		10
+													// AC MAIN 1			11
+													// AC MAIN 2			12
+													// AC GALLEY 1			13
+													// AC GALLEY 2			14
+													// AC STANDBY			15
+	bool			MCP_indication_powered;			// true when the MCP is powered and the MCP windows are indicating
+
+	char			AIR_DisplayFltAlt[6];			// Pressurization system FLT ALT window, zero terminated, can be blank or show dashes or show test pattern
+	char			AIR_DisplayLandAlt[6];			// Pressurization system LAND ALT window, zero terminated, can be blank or show dashes or show test pattern
+
+	// New variables for 737NGXu
+	bool			MAIN_annunCABIN_ALTITUDE;
+	bool			MAIN_annunTAKEOFF_CONFIG;
+	bool			CVR_annunTEST;					// CVR TEST indicator
+
 
 	// The rest of the controls and indicators match their standard FSX counterparts
 	// and can be accessed using the standard SimConnect means.
 
-
-	unsigned char   reserved[156];						
+	unsigned char   reserved[123];						
 };
 
-// NGX Control Structure
-struct PMDG_NGX_Control
+
+// NG3 CDU Screen Cell Structure
+//
+// The Symbol is the ASCII code of the character to be drawn plus the following special symbols:
+// \xA1: left arrow
+// \xA2: right arrow
+//
+// See the note on enabling the CDU screen broadcast at the beginning of this file.
+
+struct PMDG_NG3_CDU_Cell
+{
+	unsigned char	Symbol;			
+	unsigned char	Color;					// any of PMDG_NG3_CDU_COLOR_ defines
+	unsigned char	Flags;					// a combination of PMDG_NG3_CDU_FLAG_ bits
+};
+
+// NG3 CDU Screen Data Structure
+
+#define CDU_COLUMNS	24
+#define CDU_ROWS	14
+
+struct PMDG_NG3_CDU_Screen
+{
+	PMDG_NG3_CDU_Cell Cells[CDU_COLUMNS][CDU_ROWS];	
+	bool Powered;							// true if the CDU is powered
+};
+
+// NG3 CDU Screen Cell Colors
+#define PMDG_NG3_CDU_COLOR_WHITE		0		
+#define PMDG_NG3_CDU_COLOR_CYAN			1
+#define PMDG_NG3_CDU_COLOR_GREEN		2
+#define PMDG_NG3_CDU_COLOR_MAGENTA		3
+#define PMDG_NG3_CDU_COLOR_AMBER		4
+#define PMDG_NG3_CDU_COLOR_RED			5
+
+// NG3 CDU Screen Cell flags
+#define PMDG_NG3_CDU_FLAG_SMALL_FONT	0x01		// small font, including that used for line headers 
+#define PMDG_NG3_CDU_FLAG_REVERSE		0x02		// character background is highlighted in reverse video
+#define PMDG_NG3_CDU_FLAG_UNUSED		0x04		// dimmed character color indicating inop/unused entries
+
+
+// NG3 Control Structure
+struct PMDG_NG3_Control
 {
 	unsigned int Event;
 	unsigned int Parameter;
@@ -519,45 +597,6 @@ struct PMDG_NGX_Control
 #define THIRD_PARTY_EVENT_ID_MIN        		0x00011000		// equals to 69632
 #endif
 
-
-// NGX CDU Screen Cell Structure
-//
-// The Symbol is the ASCII code of the character to be drawn plus the following special symbols:
-// \xA1: left arrow
-// \xA2: right arrow
-//
-// See the note on enabling the CDU screen broadcast at the beginning of this file.
-
-struct PMDG_NGX_CDU_Cell
-{
-	unsigned char	Symbol;			
-	unsigned char	Color;					// any of PMDG_NGX_CDU_COLOR_ defines
-	unsigned char	Flags;					// a combination of PMDG_NGX_CDU_FLAG_ bits
-};
-
-// NGX CDU Screen Data Structure
-
-#define CDU_COLUMNS	24
-#define CDU_ROWS	14
-
-struct PMDG_NGX_CDU_Screen
-{
-	PMDG_NGX_CDU_Cell Cells[CDU_COLUMNS][CDU_ROWS];	
-	bool Powered;							// true if the CDU is powered
-};
-
-// NGX CDU Screen Cell Colors
-#define PMDG_NGX_CDU_COLOR_WHITE		0		
-#define PMDG_NGX_CDU_COLOR_CYAN			1
-#define PMDG_NGX_CDU_COLOR_GREEN		2
-#define PMDG_NGX_CDU_COLOR_MAGENTA		3
-#define PMDG_NGX_CDU_COLOR_AMBER		4
-#define PMDG_NGX_CDU_COLOR_RED			5
-
-// NGX CDU Screen Cell flags
-#define PMDG_NGX_CDU_FLAG_SMALL_FONT	0x01		// small font, including that used for line headers 
-#define PMDG_NGX_CDU_FLAG_REVERSE		0x02		// character background is highlighted in reverse video
-#define PMDG_NGX_CDU_FLAG_UNUSED		0x04		// dimmed character color indicating inop/unused entries
 
 // Audio control panel selected receiver flags.
 // The COMM_ReceiverSwitches[3] variables may contain any combination of these flags.
@@ -610,6 +649,15 @@ struct PMDG_NGX_CDU_Screen
 #define EVT_OH_FUEL_PUMP_L_CENTER					(THIRD_PARTY_EVENT_ID_MIN + 45)		// 45 - FUEL PUMP CENTER LEFT Switch 
 #define EVT_OH_FUEL_PUMP_R_CENTER					(THIRD_PARTY_EVENT_ID_MIN + 46)		// 46 - FUEL PUMP CENTER LEFT Switch 
 #define EVT_OH_FUEL_CROSSFEED						(THIRD_PARTY_EVENT_ID_MIN + 49)		// 49 - CROSSFEED Selector 
+#define EVT_OH_FUEL_AUX_FWD_A						(THIRD_PARTY_EVENT_ID_MIN + 2009)	// 2009 - AUX FUEL A FWD
+#define EVT_OH_FUEL_AUX_FWD_B						(THIRD_PARTY_EVENT_ID_MIN + 2010)	// 2010 - AUX FUEL B FWD
+#define EVT_OH_FUEL_AUX_AFT_A						(THIRD_PARTY_EVENT_ID_MIN + 2011)	// 2011 - AUX FUEL A AFT
+#define EVT_OH_FUEL_AUX_AFT_B						(THIRD_PARTY_EVENT_ID_MIN + 2012)	// 2012 - AUX FUEL B AFT
+#define EVT_OH_FUEL_FWD_BLD							(THIRD_PARTY_EVENT_ID_MIN + 2013)	// 2013 - FWD AUX BLD
+#define EVT_OH_FUEL_AFT_BLD							(THIRD_PARTY_EVENT_ID_MIN + 2014)	// 2014 - AFT AUX BLD
+#define EVT_OH_FUEL_GND_XFR_GUARD					(THIRD_PARTY_EVENT_ID_MIN + 2018)	// 2018 - GND TRANSFER
+#define EVT_OH_FUEL_GND_XFR_SW						(THIRD_PARTY_EVENT_ID_MIN + 2019)	// 2019 - GND TRANSFER GUARD
+
 
 // Overhead - LIGHTS Panel
 #define	EVT_OH_LAND_LIGHTS_GUARD					(THIRD_PARTY_EVENT_ID_MIN + 110)	
@@ -988,7 +1036,15 @@ struct PMDG_NGX_CDU_Screen
 #define EVT_CHRONO_R_RESET						(THIRD_PARTY_EVENT_ID_MIN + 529)	
 #define EVT_CHRONO_R_ET							(THIRD_PARTY_EVENT_ID_MIN + 530)	
 #define EVT_CLOCK_L								(THIRD_PARTY_EVENT_ID_MIN + 890)	
+#define EVT_MIC_L								(THIRD_PARTY_EVENT_ID_MIN + 891)	
+#define EVT_MIC_R								(THIRD_PARTY_EVENT_ID_MIN + 892)	
 #define EVT_CLOCK_R								(THIRD_PARTY_EVENT_ID_MIN + 893)	
+
+// Side Panel =- chart & map switches
+#define EVT_CHART_BRT_L							(THIRD_PARTY_EVENT_ID_MIN + 319)	
+#define EVT_CHART_BRT_R							(THIRD_PARTY_EVENT_ID_MIN + 322)	
+#define EVT_MAP_BRT_L							(THIRD_PARTY_EVENT_ID_MIN + 323)	
+#define EVT_MAP_BRT_R							(THIRD_PARTY_EVENT_ID_MIN + 324)	
 
 // Control Stand
 //
@@ -1261,8 +1317,8 @@ struct PMDG_NGX_CDU_Screen
 #define EVT_TCAS_KNOB1				(THIRD_PARTY_EVENT_ID_MIN + 804)
 #define EVT_TCAS_KNOB2				(THIRD_PARTY_EVENT_ID_MIN + 805)
 #define EVT_TCAS_IDENT				(THIRD_PARTY_EVENT_ID_MIN + 806)
-#define EVT_TCAS_KNOB4				(THIRD_PARTY_EVENT_ID_MIN + 807)
 #define EVT_TCAS_KNOB3				(THIRD_PARTY_EVENT_ID_MIN + 808)
+#define EVT_TCAS_KNOB4				(THIRD_PARTY_EVENT_ID_MIN + 807)
 
 // HUD control panel
 #define EVT_HUD_MODE				(THIRD_PARTY_EVENT_ID_MIN + 770)	// 
@@ -1287,6 +1343,8 @@ struct PMDG_NGX_CDU_Screen
 #define EVT_HUD_STOW				(THIRD_PARTY_EVENT_ID_MIN + 979)	// 
 #define EVT_HUD_BRIGTHNESS			(THIRD_PARTY_EVENT_ID_MIN + 980)	//
 #define EVT_HUD_AUTO_MAN			(THIRD_PARTY_EVENT_ID_MIN + 981)	//
+#define EVT_HGS_EYEPOINT            (THIRD_PARTY_EVENT_ID_MIN + 984)    //
+#define EVT_NON_HGS_EYEPOINT        (THIRD_PARTY_EVENT_ID_MIN + 985)    //
 
 // HUD Annunciator Panel
 #define EVT_HGS_FAIL_SWITCH			(THIRD_PARTY_EVENT_ID_MIN + 522)	//
@@ -1468,6 +1526,213 @@ struct PMDG_NGX_CDU_Screen
 #define EVT_PED_FLOOD_CONTROL						(THIRD_PARTY_EVENT_ID_MIN + 756)
 #define EVT_PED_PANEL_CONTROL						(THIRD_PARTY_EVENT_ID_MIN + 757)
 
+// EFB
+#define EVT_EFB_L_START									(THIRD_PARTY_EVENT_ID_MIN + 1700)	
+#define EVT_EFB_L_MENU									(EVT_EFB_L_START + 0)
+#define EVT_EFB_L_BACK									(EVT_EFB_L_START + 1)
+#define EVT_EFB_L_PAGE_UP								(EVT_EFB_L_START + 2)
+#define EVT_EFB_L_PAGE_DOWN								(EVT_EFB_L_START + 3)
+#define EVT_EFB_L_XFR									(EVT_EFB_L_START + 4)
+#define EVT_EFB_L_ENTER									(EVT_EFB_L_START + 5)
+#define EVT_EFB_L_ZOOM_IN								(EVT_EFB_L_START + 6)
+#define EVT_EFB_L_ZOOM_OUT								(EVT_EFB_L_START + 7)
+#define EVT_EFB_L_ARROW_UP								(EVT_EFB_L_START + 8)
+#define EVT_EFB_L_ARROW_DOWN							(EVT_EFB_L_START + 9)
+#define EVT_EFB_L_ARROW_LEFT							(EVT_EFB_L_START + 10)
+#define EVT_EFB_L_ARROW_RIGHT							(EVT_EFB_L_START + 11)
+#define EVT_EFB_L_LSK_1L								(EVT_EFB_L_START + 12)
+#define EVT_EFB_L_LSK_2L								(EVT_EFB_L_START + 13)
+#define EVT_EFB_L_LSK_3L								(EVT_EFB_L_START + 14)
+#define EVT_EFB_L_LSK_4L								(EVT_EFB_L_START + 15)
+#define EVT_EFB_L_LSK_5L								(EVT_EFB_L_START + 16)
+#define EVT_EFB_L_LSK_6L								(EVT_EFB_L_START + 17)
+#define EVT_EFB_L_LSK_7L								(EVT_EFB_L_START + 18)
+#define EVT_EFB_L_LSK_8L								(EVT_EFB_L_START + 19)
+#define EVT_EFB_L_LSK_1R								(EVT_EFB_L_START + 20)
+#define EVT_EFB_L_LSK_2R								(EVT_EFB_L_START + 21)
+#define EVT_EFB_L_LSK_3R								(EVT_EFB_L_START + 22)
+#define EVT_EFB_L_LSK_4R								(EVT_EFB_L_START + 23)
+#define EVT_EFB_L_LSK_5R								(EVT_EFB_L_START + 24)
+#define EVT_EFB_L_LSK_6R								(EVT_EFB_L_START + 25)
+#define EVT_EFB_L_LSK_7R								(EVT_EFB_L_START + 26)
+#define EVT_EFB_L_LSK_8R								(EVT_EFB_L_START + 27)
+#define EVT_EFB_L_BRIGHT_UP								(EVT_EFB_L_START + 28)
+#define EVT_EFB_L_BRIGHT_DN								(EVT_EFB_L_START + 29)
+#define EVT_EFB_L_POWER									(EVT_EFB_L_START + 30)
+
+#define EVT_EFB_L_KEY_START								(EVT_EFB_L_START + 31)
+#define EVT_EFB_L_KEY_A									(EVT_EFB_L_KEY_START + 0 ) 
+#define EVT_EFB_L_KEY_B									(EVT_EFB_L_KEY_START + 1 ) 
+#define EVT_EFB_L_KEY_C									(EVT_EFB_L_KEY_START + 2 ) 
+#define EVT_EFB_L_KEY_D									(EVT_EFB_L_KEY_START + 3 ) 
+#define EVT_EFB_L_KEY_E									(EVT_EFB_L_KEY_START + 4 ) 
+#define EVT_EFB_L_KEY_F									(EVT_EFB_L_KEY_START + 5 ) 
+#define EVT_EFB_L_KEY_G									(EVT_EFB_L_KEY_START + 6 ) 
+#define EVT_EFB_L_KEY_H									(EVT_EFB_L_KEY_START + 7 ) 
+#define EVT_EFB_L_KEY_I									(EVT_EFB_L_KEY_START + 8 ) 
+#define EVT_EFB_L_KEY_J									(EVT_EFB_L_KEY_START + 9 ) 
+#define EVT_EFB_L_KEY_K									(EVT_EFB_L_KEY_START + 10 ) 
+#define EVT_EFB_L_KEY_L									(EVT_EFB_L_KEY_START + 11 ) 
+#define EVT_EFB_L_KEY_M									(EVT_EFB_L_KEY_START + 12 ) 
+#define EVT_EFB_L_KEY_N									(EVT_EFB_L_KEY_START + 13 ) 
+#define EVT_EFB_L_KEY_O									(EVT_EFB_L_KEY_START + 14 ) 
+#define EVT_EFB_L_KEY_P									(EVT_EFB_L_KEY_START + 15 ) 
+#define EVT_EFB_L_KEY_Q									(EVT_EFB_L_KEY_START + 16 ) 
+#define EVT_EFB_L_KEY_R									(EVT_EFB_L_KEY_START + 17 ) 
+#define EVT_EFB_L_KEY_S									(EVT_EFB_L_KEY_START + 18 ) 
+#define EVT_EFB_L_KEY_T									(EVT_EFB_L_KEY_START + 19 ) 
+#define EVT_EFB_L_KEY_U									(EVT_EFB_L_KEY_START + 20 ) 
+#define EVT_EFB_L_KEY_V									(EVT_EFB_L_KEY_START + 21 ) 
+#define EVT_EFB_L_KEY_W									(EVT_EFB_L_KEY_START + 22 ) 
+#define EVT_EFB_L_KEY_X									(EVT_EFB_L_KEY_START + 23 ) 
+#define EVT_EFB_L_KEY_Y									(EVT_EFB_L_KEY_START + 24 ) 
+#define EVT_EFB_L_KEY_Z									(EVT_EFB_L_KEY_START + 25 ) 
+#define EVT_EFB_L_KEY_0									(EVT_EFB_L_KEY_START + 26)	
+#define EVT_EFB_L_KEY_1									(EVT_EFB_L_KEY_START + 27)	
+#define EVT_EFB_L_KEY_2									(EVT_EFB_L_KEY_START + 28)	
+#define EVT_EFB_L_KEY_3									(EVT_EFB_L_KEY_START + 29)	
+#define EVT_EFB_L_KEY_4									(EVT_EFB_L_KEY_START + 30)	
+#define EVT_EFB_L_KEY_5									(EVT_EFB_L_KEY_START + 31)	
+#define EVT_EFB_L_KEY_6									(EVT_EFB_L_KEY_START + 32)	
+#define EVT_EFB_L_KEY_7									(EVT_EFB_L_KEY_START + 33)	
+#define EVT_EFB_L_KEY_8									(EVT_EFB_L_KEY_START + 34)	
+#define EVT_EFB_L_KEY_9									(EVT_EFB_L_KEY_START + 35)	
+#define EVT_EFB_L_KEY_SPACE								(EVT_EFB_L_KEY_START + 36)	
+#define EVT_EFB_L_KEY_PLUS								(EVT_EFB_L_KEY_START + 37)	
+#define EVT_EFB_L_KEY_MINUS								(EVT_EFB_L_KEY_START + 38)	
+#define EVT_EFB_L_KEY_DOT								(EVT_EFB_L_KEY_START + 39)	
+#define EVT_EFB_L_KEY_SLASH								(EVT_EFB_L_KEY_START + 40)	
+#define EVT_EFB_L_KEY_BACKSPACE							(EVT_EFB_L_KEY_START + 41)	
+#define EVT_EFB_L_KEY_DEL								(EVT_EFB_L_KEY_START + 42)
+#define EVT_EFB_L_KEY_EQUAL								(EVT_EFB_L_KEY_START + 43)
+#define EVT_EFB_L_KEY_MULTIPLY							(EVT_EFB_L_KEY_START + 44)
+#define EVT_EFB_L_KEY_LEFT_PAR							(EVT_EFB_L_KEY_START + 45)
+#define EVT_EFB_L_KEY_RIGHT_PAR							(EVT_EFB_L_KEY_START + 46)
+#define EVT_EFB_L_KEY_QUEST								(EVT_EFB_L_KEY_START + 47)
+#define EVT_EFB_L_KEY_QUOTE								(EVT_EFB_L_KEY_START + 48)
+#define EVT_EFB_L_KEY_COMMA								(EVT_EFB_L_KEY_START + 49)
+#define EVT_EFB_L_KEY_PAGE_UP							(EVT_EFB_L_KEY_START + 50)
+#define EVT_EFB_L_KEY_PAGE_DOWN							(EVT_EFB_L_KEY_START + 51)
+#define EVT_EFB_L_KEY_ENTER								(EVT_EFB_L_KEY_START + 52)
+#define EVT_EFB_L_KEY_ARROW_UP							(EVT_EFB_L_KEY_START + 53)
+#define EVT_EFB_L_KEY_ARROW_DOWN						(EVT_EFB_L_KEY_START + 54)
+#define EVT_EFB_L_KEY_END								(EVT_EFB_L_KEY_START + 54) 
+#define EVT_EFB_L_END									(EVT_EFB_L_KEY_START + 54)	
+
+#define EVT_EFB_R_START									(EVT_EFB_L_END + 1)	
+#define EVT_EFB_R_MENU									(EVT_EFB_R_START + 0)
+#define EVT_EFB_R_BACK									(EVT_EFB_R_START + 1)
+#define EVT_EFB_R_PAGE_UP								(EVT_EFB_R_START + 2)
+#define EVT_EFB_R_PAGE_DOWN								(EVT_EFB_R_START + 3)
+#define EVT_EFB_R_XFR									(EVT_EFB_R_START + 4)
+#define EVT_EFB_R_ENTER									(EVT_EFB_R_START + 5)
+#define EVT_EFB_R_ZOOM_IN								(EVT_EFB_R_START + 6)
+#define EVT_EFB_R_ZOOM_OUT								(EVT_EFB_R_START + 7)
+#define EVT_EFB_R_ARROW_UP								(EVT_EFB_R_START + 8)
+#define EVT_EFB_R_ARROW_DOWN							(EVT_EFB_R_START + 9)
+#define EVT_EFB_R_ARROW_LEFT							(EVT_EFB_R_START + 10)
+#define EVT_EFB_R_ARROW_RIGHT							(EVT_EFB_R_START + 11)
+#define EVT_EFB_R_LSK_1L								(EVT_EFB_R_START + 12)
+#define EVT_EFB_R_LSK_2L								(EVT_EFB_R_START + 13)
+#define EVT_EFB_R_LSK_3L								(EVT_EFB_R_START + 14)
+#define EVT_EFB_R_LSK_4L								(EVT_EFB_R_START + 15)
+#define EVT_EFB_R_LSK_5L								(EVT_EFB_R_START + 16)
+#define EVT_EFB_R_LSK_6L								(EVT_EFB_R_START + 17)
+#define EVT_EFB_R_LSK_7L								(EVT_EFB_R_START + 18)
+#define EVT_EFB_R_LSK_8L								(EVT_EFB_R_START + 19)
+#define EVT_EFB_R_LSK_1R								(EVT_EFB_R_START + 20)
+#define EVT_EFB_R_LSK_2R								(EVT_EFB_R_START + 20)
+#define EVT_EFB_R_LSK_3R								(EVT_EFB_R_START + 22)
+#define EVT_EFB_R_LSK_4R								(EVT_EFB_R_START + 23)
+#define EVT_EFB_R_LSK_5R								(EVT_EFB_R_START + 24)
+#define EVT_EFB_R_LSK_6R								(EVT_EFB_R_START + 25)
+#define EVT_EFB_R_LSK_7R								(EVT_EFB_R_START + 26)
+#define EVT_EFB_R_LSK_8R								(EVT_EFB_R_START + 27)
+#define EVT_EFB__BRIGH_UP								(EVT_EFB_L_START + 28)
+#define EVT_EFB_L_BRIGHT_DN								(EVT_EFB_L_START + 29)
+#define EVT_EFB_R_POWER									(EVT_EFB_R_START + 30)
+
+#define EVT_EFB_R_KEY_START								(EVT_EFB_R_START + 31)
+#define EVT_EFB_R_KEY_A									(EVT_EFB_R_KEY_START + 0 ) 
+#define EVT_EFB_R_KEY_B									(EVT_EFB_R_KEY_START + 1 ) 
+#define EVT_EFB_R_KEY_C									(EVT_EFB_R_KEY_START + 2 ) 
+#define EVT_EFB_R_KEY_D									(EVT_EFB_R_KEY_START + 3 ) 
+#define EVT_EFB_R_KEY_E									(EVT_EFB_R_KEY_START + 4 ) 
+#define EVT_EFB_R_KEY_F									(EVT_EFB_R_KEY_START + 5 ) 
+#define EVT_EFB_R_KEY_G									(EVT_EFB_R_KEY_START + 6 ) 
+#define EVT_EFB_R_KEY_H									(EVT_EFB_R_KEY_START + 7 ) 
+#define EVT_EFB_R_KEY_I									(EVT_EFB_R_KEY_START + 8 ) 
+#define EVT_EFB_R_KEY_J									(EVT_EFB_R_KEY_START + 9 ) 
+#define EVT_EFB_R_KEY_K									(EVT_EFB_R_KEY_START + 10 ) 
+#define EVT_EFB_R_KEY_L									(EVT_EFB_R_KEY_START + 11 ) 
+#define EVT_EFB_R_KEY_M									(EVT_EFB_R_KEY_START + 12 ) 
+#define EVT_EFB_R_KEY_N									(EVT_EFB_R_KEY_START + 13 ) 
+#define EVT_EFB_R_KEY_O									(EVT_EFB_R_KEY_START + 14 ) 
+#define EVT_EFB_R_KEY_P									(EVT_EFB_R_KEY_START + 15 ) 
+#define EVT_EFB_R_KEY_Q									(EVT_EFB_R_KEY_START + 16 ) 
+#define EVT_EFB_R_KEY_R									(EVT_EFB_R_KEY_START + 17 ) 
+#define EVT_EFB_R_KEY_S									(EVT_EFB_R_KEY_START + 18 ) 
+#define EVT_EFB_R_KEY_T									(EVT_EFB_R_KEY_START + 19 ) 
+#define EVT_EFB_R_KEY_U									(EVT_EFB_R_KEY_START + 20 ) 
+#define EVT_EFB_R_KEY_V									(EVT_EFB_R_KEY_START + 21 ) 
+#define EVT_EFB_R_KEY_W									(EVT_EFB_R_KEY_START + 22 ) 
+#define EVT_EFB_R_KEY_X									(EVT_EFB_R_KEY_START + 23 ) 
+#define EVT_EFB_R_KEY_Y									(EVT_EFB_R_KEY_START + 24 ) 
+#define EVT_EFB_R_KEY_Z									(EVT_EFB_R_KEY_START + 25 ) 
+#define EVT_EFB_R_KEY_0									(EVT_EFB_R_KEY_START + 26)	
+#define EVT_EFB_R_KEY_1									(EVT_EFB_R_KEY_START + 27)	
+#define EVT_EFB_R_KEY_2									(EVT_EFB_R_KEY_START + 28)	
+#define EVT_EFB_R_KEY_3									(EVT_EFB_R_KEY_START + 29)	
+#define EVT_EFB_R_KEY_4									(EVT_EFB_R_KEY_START + 30)	
+#define EVT_EFB_R_KEY_5									(EVT_EFB_R_KEY_START + 31)	
+#define EVT_EFB_R_KEY_6									(EVT_EFB_R_KEY_START + 32)	
+#define EVT_EFB_R_KEY_7									(EVT_EFB_R_KEY_START + 33)	
+#define EVT_EFB_R_KEY_8									(EVT_EFB_R_KEY_START + 34)	
+#define EVT_EFB_R_KEY_9									(EVT_EFB_R_KEY_START + 35)	
+#define EVT_EFB_R_KEY_SPACE								(EVT_EFB_R_KEY_START + 36)	
+#define EVT_EFB_R_KEY_PLUS								(EVT_EFB_R_KEY_START + 37)	
+#define EVT_EFB_R_KEY_MINUS								(EVT_EFB_R_KEY_START + 38)	
+#define EVT_EFB_R_KEY_DOT								(EVT_EFB_R_KEY_START + 39)	
+#define EVT_EFB_R_KEY_SLASH								(EVT_EFB_R_KEY_START + 40)	
+#define EVT_EFB_R_KEY_BACKSPACE							(EVT_EFB_R_KEY_START + 41)	
+#define EVT_EFB_R_KEY_DEL								(EVT_EFB_R_KEY_START + 42)
+#define EVT_EFB_R_KEY_EQUAL								(EVT_EFB_R_KEY_START + 43)
+#define EVT_EFB_R_KEY_MULTIPLY							(EVT_EFB_R_KEY_START + 44)
+#define EVT_EFB_R_KEY_LEFT_PAR							(EVT_EFB_R_KEY_START + 45)
+#define EVT_EFB_R_KEY_RIGHT_PAR							(EVT_EFB_R_KEY_START + 46)
+#define EVT_EFB_R_KEY_QUEST								(EVT_EFB_R_KEY_START + 47)
+#define EVT_EFB_R_KEY_QUOTE								(EVT_EFB_R_KEY_START + 48)
+#define EVT_EFB_R_KEY_COMMA								(EVT_EFB_R_KEY_START + 49)
+#define EVT_EFB_R_KEY_PAGE_UP							(EVT_EFB_R_KEY_START + 50)
+#define EVT_EFB_R_KEY_PAGE_DOWN							(EVT_EFB_R_KEY_START + 51)
+#define EVT_EFB_R_KEY_ENTER								(EVT_EFB_R_KEY_START + 52)
+#define EVT_EFB_R_KEY_ARROW_UP							(EVT_EFB_R_KEY_START + 53)
+#define EVT_EFB_R_KEY_ARROW_DOWN						(EVT_EFB_R_KEY_START + 54)
+#define EVT_EFB_R_KEY_END								(EVT_EFB_R_KEY_START + 54)
+#define EVT_EFB_R_END									(EVT_EFB_R_KEY_START + 54)	
+
+// Parameter: 1000000 x (action code) + 1000 x (X Coordinate) + (Y Coordinate)
+// action codes: 0 = mouse move, 1 = mouse click,  2= mouse release, 3 = mouse wheel up, 4 = mouse wheel down
+// X / Y Coordinates: 0..1000 of EFB_SCREEN_WIDTH / EFB_SCREEN_HEIGHT (not required for action codes 3 & 4)
+#define EVT_EFB_L_SCREEN_ACTION							(THIRD_PARTY_EVENT_ID_MIN + 1900)	
+#define EVT_EFB_R_SCREEN_ACTION							(THIRD_PARTY_EVENT_ID_MIN + 1901)	
+
+// Various
+#define EVT_JUMPSEAT_STOW_EXTEND						(THIRD_PARTY_EVENT_ID_MIN + 2001)
+#define EVT_ALT_GEAR_EXT_DOOR							(THIRD_PARTY_EVENT_ID_MIN + 2002)
+#define EVT_ALT_GEAR_EXT_HANDLE_RIGHT					(THIRD_PARTY_EVENT_ID_MIN + 2003)
+#define EVT_ALT_GEAR_EXT_HANDLE_LEFT					(THIRD_PARTY_EVENT_ID_MIN + 2004)
+#define EVT_ALT_GEAR_EXT_HANDLE_NOSE					(THIRD_PARTY_EVENT_ID_MIN + 2005)
+#define EVT_COMBINER_COVER								(THIRD_PARTY_EVENT_ID_MIN + 2006)
+#define EVT_HIDE_YOKE_CAPT								(THIRD_PARTY_EVENT_ID_MIN + 2007)
+#define EVT_HIDE_YOKE_FO								(THIRD_PARTY_EVENT_ID_MIN + 2008)
+#define EVT_SPOTLIGHT_L									(THIRD_PARTY_EVENT_ID_MIN + 2015)
+#define EVT_SPOTLIGHT_R									(THIRD_PARTY_EVENT_ID_MIN + 2016)
+#define EVT_SPOTLIGHT_OBS								(THIRD_PARTY_EVENT_ID_MIN + 2017)
+
+// Grimes light
+#define EVT_GRIMES_LIGHT_CA								(THIRD_PARTY_EVENT_ID_MIN + 2020)
+
 // Custom shortcut special events
 #define EVT_LDG_LIGHTS_TOGGLE						(THIRD_PARTY_EVENT_ID_MIN + 14000)
 #define EVT_TURNOFF_LIGHTS_TOGGLE					(THIRD_PARTY_EVENT_ID_MIN + 14001)
@@ -1484,6 +1749,7 @@ struct PMDG_NGX_CDU_Screen
 #define EVT_DOOR_CARGO_AFT							(THIRD_PARTY_EVENT_ID_MIN + 14014)
 #define EVT_DOOR_EQUIPMENT_HATCH					(THIRD_PARTY_EVENT_ID_MIN + 14015)
 #define EVT_DOOR_AIRSTAIR							(THIRD_PARTY_EVENT_ID_MIN + 14016)
+#define EVT_LOGO_LIGHTS_TOGGLE						(THIRD_PARTY_EVENT_ID_MIN + 14017)
 
 // Yoke Animations
 #define EVT_YOKE_L_COUNTER_1						(THIRD_PARTY_EVENT_ID_MIN + 998)	// Counters (digits left to right)  
@@ -1511,5 +1777,7 @@ struct PMDG_NGX_CDU_Screen
 // Panel system events
 #define EVT_CTRL_ACCELERATION_DISABLE				(THIRD_PARTY_EVENT_ID_MIN + 14600)
 #define EVT_CTRL_ACCELERATION_ENABLE				(THIRD_PARTY_EVENT_ID_MIN + 14600)
+#define EVT_2D_PANEL_OFFSET							20000  // added to events triggered by 2D panel pop-up windows
+
 
 #endif

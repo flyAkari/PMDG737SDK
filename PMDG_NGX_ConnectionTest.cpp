@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
 //
-//  PMDG 737NGX external connection sample 
+//  PMDG 737 NG3 external connection sample 
 // 
 //------------------------------------------------------------------------------
 
-#include "PMDG_NGX_SDK.h"
+#include "PMDG_NG3_SDK.h"
 
 #include <windows.h>
 #include <tchar.h>
@@ -16,16 +16,16 @@
 int     quit = 0;
 HANDLE  hSimConnect = NULL;
 bool    AircraftRunning = false;		
-PMDG_NGX_Control Control; 
+PMDG_NG3_Control Control; 
 
 
-static enum DATA_REQUEST_ID {
+enum DATA_REQUEST_ID {
 	DATA_REQUEST,
 	CONTROL_REQUEST,
 	AIR_PATH_REQUEST
 };
 
-static enum EVENT_ID {
+enum EVENT_ID {
 	EVENT_SIM_START,	// used to track the loaded aircraft
 
 	EVENT_LOGO_LIGHT_SWITCH,
@@ -38,55 +38,55 @@ static enum EVENT_ID {
 	EVENT_KEYBOARD_D
 };
 
-static enum INPUT_ID {
+enum INPUT_ID {
 	INPUT0			// used to handle key presses
 };
 
-static enum GROUP_ID {
+enum GROUP_ID {
 	GROUP_KEYBOARD		// used to handle key presses
 };
 
 
-// this variable keeps the state of one of the NGX switches
-// NOTE - add these lines to <FSX>\PMDG\PMDG 737 NGX\737NGX_Options.ini: 
+// this variable keeps the state of one of the NG3 switches
+// NOTE - add these lines to <FSX>\PMDG\PMDG 737 NG3\737NG3_Options.ini: 
 //
 //[SDK]
 //EnableDataBroadcast=1
 //
 // to enable the data sending from the NGX.
 
-bool NGX_FuelPumpLAftLight = true;
-bool NGX_TaxiLightSwitch = false;
-bool NGX_LogoLightSwitch = false;
+bool NG3_FuelPumpLAftLight = true;
+bool NG3_TaxiLightSwitch = false;
+bool NG3_LogoLightSwitch = false;
 
-// This function is called when NGX data changes
-void ProcessNGXData (PMDG_NGX_Data *pS)
+// This function is called when NG3 data changes
+void ProcessNG3Data (PMDG_NG3_Data *pS)
 {
 	// test the data access:
 	// get the state of an annunciator light and display it
-	if (pS->FUEL_annunLOWPRESS_Aft[0] != NGX_FuelPumpLAftLight)
+	if (pS->FUEL_annunLOWPRESS_Aft[0] != NG3_FuelPumpLAftLight)
 	{
-		NGX_FuelPumpLAftLight = pS->FUEL_annunLOWPRESS_Aft[0];
-		if (NGX_FuelPumpLAftLight)
+		NG3_FuelPumpLAftLight = pS->FUEL_annunLOWPRESS_Aft[0];
+		if (NG3_FuelPumpLAftLight)
 			printf("\nLOW PRESS LIGHT: [ON]");
 		else
 			printf("\nLOW PRESS LIGHT: [OFF]");
 	}
 
 	// get the state of switches and save it for later use
-	if (pS->LTS_TaxiSw != NGX_TaxiLightSwitch)
+	if (pS->LTS_TaxiSw != NG3_TaxiLightSwitch)
 	{
-		NGX_TaxiLightSwitch = pS->LTS_TaxiSw;
-		if (NGX_TaxiLightSwitch)
+		NG3_TaxiLightSwitch = pS->LTS_TaxiSw;
+		if (NG3_TaxiLightSwitch)
 			printf("\nTAXI LIGHTS: [ON]");
 		else
 			printf("\nTAXI LIGHTS: [OFF]");
 	}
 
-	if (pS->LTS_LogoSw != NGX_LogoLightSwitch)
+	if (pS->LTS_LogoSw != NG3_LogoLightSwitch)
 	{
-		NGX_LogoLightSwitch = pS->LTS_LogoSw;
-		if (NGX_LogoLightSwitch)
+		NG3_LogoLightSwitch = pS->LTS_LogoSw;
+		if (NG3_LogoLightSwitch)
 			printf("\nLOGO LIGHTS: [ON]");
 		else
 			printf("\nLOGO LIGHTS: [OFF]");
@@ -98,9 +98,9 @@ void toggleTaxiLightSwitch()
 	// Test the first control method: use the control data area.
 	if (AircraftRunning)
 	{
- 		bool New_TaxiLightSwitch = !NGX_TaxiLightSwitch;
+ 		bool New_TaxiLightSwitch = !NG3_TaxiLightSwitch;
 
-		// Send a command only if there is no active command request and previous command has been processed by the NGX
+		// Send a command only if there is no active command request and previous command has been processed by the NG3
 		if (Control.Event == 0)
 		{
  			Control.Event = EVT_OH_LIGHTS_TAXI;		// = 69749
@@ -109,8 +109,8 @@ void toggleTaxiLightSwitch()
  			else
  				Control.Parameter = 0;
 
-			SimConnect_SetClientData (hSimConnect, PMDG_NGX_CONTROL_ID,	PMDG_NGX_CONTROL_DEFINITION, 
-				0, 0, sizeof(PMDG_NGX_Control), &Control);
+			SimConnect_SetClientData (hSimConnect, PMDG_NG3_CONTROL_ID,	PMDG_NG3_CONTROL_DEFINITION, 
+				0, 0, sizeof(PMDG_NG3_Control), &Control);
 		}
 	}
 }
@@ -119,7 +119,7 @@ void toggleLogoLightsSwitch()
 {
 	// Test the second control method: send an event
 	// use direct switch position
-	bool New_LogoLightSwitch = !NGX_LogoLightSwitch;
+	bool New_LogoLightSwitch = !NG3_LogoLightSwitch;
 
 	int parameter = New_LogoLightSwitch? 1 : 0;
 	SimConnect_TransmitClientEvent(hSimConnect, 0, EVENT_LOGO_LIGHT_SWITCH, parameter, 
@@ -148,7 +148,7 @@ void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void *pContex
 {
 	switch(pData->dwID)
 	{
-	case SIMCONNECT_RECV_ID_CLIENT_DATA: // Receive and process the NGX data block
+	case SIMCONNECT_RECV_ID_CLIENT_DATA: // Receive and process the NG3 data block
 		{
 			SIMCONNECT_RECV_CLIENT_DATA *pObjData = (SIMCONNECT_RECV_CLIENT_DATA*)pData;
 
@@ -156,14 +156,14 @@ void CALLBACK MyDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void *pContex
 			{
 			case DATA_REQUEST:
 				{
-					PMDG_NGX_Data *pS = (PMDG_NGX_Data*)&pObjData->dwData;
-					ProcessNGXData(pS);
+					PMDG_NG3_Data *pS = (PMDG_NG3_Data*)&pObjData->dwData;
+					ProcessNG3Data(pS);
 					break;
 				}
 			case CONTROL_REQUEST:
 				{
 					// keep the present state of Control area to know if the server had received and reset the command
-					PMDG_NGX_Control *pS = (PMDG_NGX_Control*)&pObjData->dwData;
+					PMDG_NG3_Control *pS = (PMDG_NG3_Control*)&pObjData->dwData;
 					Control = *pS;
 					break;
 				}
@@ -234,21 +234,21 @@ void testCommunication()
 {
     HRESULT hr;
 
-    if (SUCCEEDED(SimConnect_Open(&hSimConnect, "PMDG NGX Test", NULL, 0, 0, 0)))
+    if (SUCCEEDED(SimConnect_Open(&hSimConnect, "PMDG NG3 Test", NULL, 0, 0, 0)))
     {
         printf("\nConnected to Flight Simulator!");   
         
 		// 1) Set up data connection
 
         // Associate an ID with the PMDG data area name
-		hr = SimConnect_MapClientDataNameToID (hSimConnect, PMDG_NGX_DATA_NAME, PMDG_NGX_DATA_ID);
+		hr = SimConnect_MapClientDataNameToID (hSimConnect, PMDG_NG3_DATA_NAME, PMDG_NG3_DATA_ID);
 
         // Define the data area structure - this is a required step
-		hr = SimConnect_AddToClientDataDefinition (hSimConnect, PMDG_NGX_DATA_DEFINITION, 0, sizeof(PMDG_NGX_Data), 0, 0);
+		hr = SimConnect_AddToClientDataDefinition (hSimConnect, PMDG_NG3_DATA_DEFINITION, 0, sizeof(PMDG_NG3_Data), 0, 0);
 
         // Sign up for notification of data change.  
 		// SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED flag asks for the data to be sent only when some of the data is changed.
-		hr = SimConnect_RequestClientData(hSimConnect, PMDG_NGX_DATA_ID, DATA_REQUEST, PMDG_NGX_DATA_DEFINITION, 
+		hr = SimConnect_RequestClientData(hSimConnect, PMDG_NG3_DATA_ID, DATA_REQUEST, PMDG_NG3_DATA_DEFINITION, 
                                                        SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
 
 		
@@ -259,13 +259,13 @@ void testCommunication()
 		Control.Parameter = 0;
 
 		// Associate an ID with the PMDG control area name
-		hr = SimConnect_MapClientDataNameToID (hSimConnect, PMDG_NGX_CONTROL_NAME, PMDG_NGX_CONTROL_ID);
+		hr = SimConnect_MapClientDataNameToID (hSimConnect, PMDG_NG3_CONTROL_NAME, PMDG_NG3_CONTROL_ID);
 
 		// Define the control area structure - this is a required step
-		hr = SimConnect_AddToClientDataDefinition (hSimConnect, PMDG_NGX_CONTROL_DEFINITION, 0, sizeof(PMDG_NGX_Control), 0, 0);
+		hr = SimConnect_AddToClientDataDefinition (hSimConnect, PMDG_NG3_CONTROL_DEFINITION, 0, sizeof(PMDG_NG3_Control), 0, 0);
         
 		// Sign up for notification of control change.  
-		hr = SimConnect_RequestClientData(hSimConnect, PMDG_NGX_CONTROL_ID, CONTROL_REQUEST, PMDG_NGX_CONTROL_DEFINITION, 
+		hr = SimConnect_RequestClientData(hSimConnect, PMDG_NG3_CONTROL_ID, CONTROL_REQUEST, PMDG_NG3_CONTROL_DEFINITION, 
 			SIMCONNECT_CLIENT_DATA_PERIOD_ON_SET, SIMCONNECT_CLIENT_DATA_REQUEST_FLAG_CHANGED, 0, 0, 0);
 
 		// Second method: Create event IDs for controls that we are going to operate
@@ -304,7 +304,7 @@ void testCommunication()
 		// 5) Main loop
         while( quit == 0 )
         {
-			// receive and process the NGX data
+			// receive and process the NG3 data
             SimConnect_CallDispatch(hSimConnect, MyDispatchProc, NULL);
 
             Sleep(1);
